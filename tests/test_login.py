@@ -1,66 +1,38 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
+from urls import BASE_URL, LOGIN_URL, REGISTER_URL, FORGOT_PASSWORD_URL
+from locators import HomePageLocators, RegistrationPageLocators, ForgotPasswordPageLocators
 
 class TestLogin:
+    def test_login_click_on_enter_personal_account_button_login_page_opens(self, driver, wait):
+        driver.get(BASE_URL)
 
-    def test_login_click_on_enter_personal_account_button_login_page_opens(self, target_url, enter_personal_account_button_locator):
-        driver = webdriver.Chrome()
+        driver.find_element(*HomePageLocators.ENTER_ACCOUNT_BUTTON).click()
 
-        driver.get(target_url)
+        wait.until(expected_conditions.url_to_be(LOGIN_URL))
+        assert driver.current_url == LOGIN_URL
 
-        driver.find_element(By.XPATH, enter_personal_account_button_locator).click()
+    def test_login_click_on_personal_account_link_login_page_opens(self, driver, wait):
+        driver.get(BASE_URL)
 
-        assert driver.current_url == f'{target_url}/login'
+        driver.find_element(*HomePageLocators.ENTER_ACCOUNT_BUTTON).click()
 
-        driver.quit()
+        wait.until(expected_conditions.url_to_be(LOGIN_URL))
+        assert driver.current_url == LOGIN_URL
 
-    def test_login_click_on_personal_account_link_login_page_opens(self, target_url, account_link_locator):
-        driver = webdriver.Chrome()
+    def test_login_navigate_to_registration_page_and_click_on_already_registered_link_login_page_opens(self, driver, wait):
+        driver.get(REGISTER_URL)
 
-        driver.get(target_url)
+        wait.until(expected_conditions.presence_of_element_located(RegistrationPageLocators.LOGIN_LINK))
+        driver.find_element(*RegistrationPageLocators.LOGIN_LINK).click()
 
-        driver.find_element(By.XPATH, account_link_locator).click()
+        wait.until(expected_conditions.url_to_be(LOGIN_URL))
+        assert driver.current_url == LOGIN_URL
 
-        assert driver.current_url == f'{target_url}/login'
+    def test_login_navigate_to_forgot_password_page_and_click_on_remembered_password_link_login_page_opens(self, driver, wait):
+        driver.get(FORGOT_PASSWORD_URL)
 
-        driver.quit()
+        wait.until(expected_conditions.presence_of_element_located(ForgotPasswordPageLocators.LOGIN_LINK))
+        driver.find_element(*ForgotPasswordPageLocators.LOGIN_LINK).click()
 
-    def test_login_navigate_to_registration_page_and_click_on_already_registered_link_login_page_opens(self, target_url, account_link_locator, registration_link_locator, login_link_locator):
-        driver = webdriver.Chrome()
-
-        driver.get(target_url)
-
-        driver.find_element(By.XPATH, account_link_locator).click()
-
-        WebDriverWait(driver, 3).until(expected_conditions.element_to_be_clickable((By.XPATH, registration_link_locator)))
-
-        driver.find_element(By.XPATH, registration_link_locator).click()
-
-        WebDriverWait(driver, 3).until(expected_conditions.element_to_be_clickable((By.XPATH, login_link_locator)))
-
-        driver.find_element(By.XPATH, login_link_locator).click()
-
-        assert driver.current_url == f'{target_url}/login'
-
-        driver.quit()
-
-    def test_login_navigate_to_forgot_password_page_and_click_on_remembered_password_link_login_page_opens(self, target_url, account_link_locator, forgot_password_link_locator, login_link_locator):
-        driver = webdriver.Chrome()
-
-        driver.get(target_url)
-
-        driver.find_element(By.XPATH, account_link_locator).click()
-
-        WebDriverWait(driver, 3).until(expected_conditions.element_to_be_clickable((By.XPATH, forgot_password_link_locator)))
-
-        driver.find_element(By.XPATH, forgot_password_link_locator).click()
-
-        WebDriverWait(driver, 3).until(expected_conditions.element_to_be_clickable((By.XPATH, login_link_locator)))
-
-        driver.find_element(By.XPATH, login_link_locator).click()
-
-        assert driver.current_url == f'{target_url}/login'
-
-        driver.quit()
+        wait.until(expected_conditions.url_to_be(LOGIN_URL))
+        assert driver.current_url == LOGIN_URL

@@ -1,55 +1,48 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
+from urls import BASE_URL, LOGIN_URL, REGISTER_URL
+from locators import HomePageLocators, LoginPageLocators, RegistrationPageLocators
+from data import generate_random_email, get_test_password
 
 class TestRegistration:
-    def test_registration_provide_valid_credentials_registration_is_successful(self, target_url, email, password, account_link_locator, registration_link_locator):
-        driver = webdriver.Chrome()
+    def test_registration_provide_valid_credentials_registration_is_successful(self, driver, wait):
+        email = generate_random_email()
+        password = get_test_password()
 
-        driver.get(target_url)
+        driver.get(BASE_URL)
 
-        driver.find_element(By.XPATH, account_link_locator).click()
+        driver.find_element(*HomePageLocators.PERSONAL_ACCOUNT_LINK).click()
+        wait.until(expected_conditions.url_to_be(LOGIN_URL))
+        driver.find_element(*LoginPageLocators.REGISTER_LINK).click()
+        wait.until(expected_conditions.url_to_be(REGISTER_URL))
 
-        WebDriverWait(driver, 3).until(expected_conditions.element_to_be_clickable((By.XPATH, registration_link_locator)))
+        assert driver.current_url == REGISTER_URL
 
-        driver.find_element(By.XPATH, registration_link_locator).click()
+        driver.find_element(*RegistrationPageLocators.NAME_INPUT).send_keys(email)
+        driver.find_element(*RegistrationPageLocators.EMAIL_INPUT).send_keys(email)
+        driver.find_element(*RegistrationPageLocators.PASSWORD_INPUT).send_keys(password)
 
-        assert driver.current_url == f'{target_url}/register'
+        driver.find_element(*RegistrationPageLocators.REGISTER_BUTTON).click()
 
-        for element in driver.find_elements(By.XPATH, './/input[@name="name"]'):
-            element.send_keys(email)
+        wait.until(expected_conditions.url_to_be(LOGIN_URL))
+        assert driver.current_url == LOGIN_URL
 
-        driver.find_element(By.XPATH, './/input[@type="password"]').send_keys(password)
+    def test_registration_provide_unacceptable_password_registration_is_forbidden(self, driver, wait):
+        email = generate_random_email()
 
-        driver.find_element(By.CLASS_NAME, 'button_button_type_primary__1O7Bx').click()
+        driver.get(BASE_URL)
 
-        WebDriverWait(driver, 3).until(expected_conditions.element_to_be_clickable((By.XPATH, registration_link_locator)))
+        driver.find_element(*HomePageLocators.PERSONAL_ACCOUNT_LINK).click()
+        wait.until(expected_conditions.url_to_be(LOGIN_URL))
+        driver.find_element(*LoginPageLocators.REGISTER_LINK).click()
+        wait.until(expected_conditions.url_to_be(REGISTER_URL))
 
-        assert driver.current_url == f'{target_url}/login'
+        assert driver.current_url == REGISTER_URL
 
-        driver.quit()
+        driver.find_element(*RegistrationPageLocators.NAME_INPUT).send_keys(email)
+        driver.find_element(*RegistrationPageLocators.EMAIL_INPUT).send_keys(email)
+        driver.find_element(*RegistrationPageLocators.PASSWORD_INPUT).send_keys("short")
 
-    def test_registration_provide_unacceptable_password_registration_is_forbidden(self, target_url, email, account_link_locator, registration_link_locator):
-        driver = webdriver.Chrome()
+        driver.find_element(*RegistrationPageLocators.REGISTER_BUTTON).click()
 
-        driver.get(target_url)
-
-        driver.find_element(By.XPATH, account_link_locator).click()
-
-        WebDriverWait(driver, 3).until(expected_conditions.element_to_be_clickable((By.XPATH, registration_link_locator)))
-
-        driver.find_element(By.XPATH, registration_link_locator).click()
-
-        assert driver.current_url == f'{target_url}/register'
-
-        for element in driver.find_elements(By.XPATH, './/input[@name="name"]'):
-            element.send_keys(email)
-
-        driver.find_element(By.XPATH, './/input[@type="password"]').send_keys("short")
-
-        driver.find_element(By.CLASS_NAME, 'button_button_type_primary__1O7Bx').click()
-
-        assert driver.current_url != f'{target_url}/login'
-
-        driver.quit()
+        wait.until(expected_conditions.url_to_be(REGISTER_URL))
+        assert driver.current_url == REGISTER_URL

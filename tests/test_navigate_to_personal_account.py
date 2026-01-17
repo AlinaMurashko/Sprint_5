@@ -1,30 +1,20 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
+from urls import LOGIN_URL, ACCOUNT_PROFILE_URL
+from locators import LoginPageLocators, HomePageLocators, AccountPageLocators
 
 class TestNavigateToPersonalAccount:
-    
-    def test_login_succesfully_click_on_personal_account_link_personal_account_page_opens(self, target_url, account_link_locator, login_input_locator, password_input_locator, registered_credentials, register_button_class_name, logout_button_locator):
-        driver = webdriver.Chrome()
+    def test_login_succesfully_click_on_personal_account_link_personal_account_page_opens(self, driver, wait, registered_credentials):
+        driver.get(LOGIN_URL)
 
-        driver.get(target_url)
+        driver.find_element(*LoginPageLocators.EMAIL_INPUT).send_keys(registered_credentials['email'])
+        driver.find_element(*LoginPageLocators.PASSWORD_INPUT).send_keys(registered_credentials['password'])
 
-        driver.find_element(By.XPATH, account_link_locator).click()
+        driver.find_element(*LoginPageLocators.LOGIN_BUTTON).click()
 
-        WebDriverWait(driver, 3).until(expected_conditions.presence_of_element_located((By.XPATH, login_input_locator)))
+        wait.until(expected_conditions.presence_of_element_located(HomePageLocators.BURGER_TITLE))
 
-        driver.find_element(By.XPATH, login_input_locator).send_keys(registered_credentials['email'])
-        driver.find_element(By.XPATH, password_input_locator).send_keys(registered_credentials['password'])
+        driver.find_element(*HomePageLocators.PERSONAL_ACCOUNT_LINK).click()
 
-        driver.find_element(By.CLASS_NAME, register_button_class_name).click()
+        wait.until(expected_conditions.presence_of_element_located(AccountPageLocators.LOGOUT_BUTTON))
 
-        WebDriverWait(driver, 3).until_not(expected_conditions.presence_of_element_located((By.XPATH, login_input_locator)))
-
-        driver.find_element(By.XPATH, account_link_locator).click()
-
-        WebDriverWait(driver, 3).until(expected_conditions.presence_of_element_located((By.XPATH, logout_button_locator)))
-
-        assert driver.current_url == f'{target_url}/account/profile'
-
-        driver.quit()
+        assert driver.current_url == ACCOUNT_PROFILE_URL
